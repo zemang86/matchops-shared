@@ -26,7 +26,7 @@ Deliberately **not** here:
 | Generated Supabase types | Regenerate in each repo with `npm run db:types`. The database is the contract. |
 | `vmixTransformers.ts` | vMix-specific; the graphics app has its own template contract. |
 | React components, query hooks | App internals. Sharing them couples release cycles. |
-| Hand-written entity types (`common.ts`) | Already drifted from the schema — it declares `team.logo_url` and `match.is_public`, neither of which exists. Trust the generated types. |
+| Hand-written entity types (`common.ts`) | App-level view models, and they overlap the generated types. Regenerate rather than share. |
 
 ## What is here
 
