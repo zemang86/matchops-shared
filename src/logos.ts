@@ -44,9 +44,11 @@ export const getBroadcastLogoUrl = (
 export const getVmixLogoUrl = getBroadcastLogoUrl;
 
 /**
- * Cache key for the graphics app's on-disk badge store. Including logo_updated_at
- * (migration 027) is what makes a re-uploaded badge actually replace the cached copy
- * instead of silently serving the stale one for the rest of the season.
+ * Cache key for the graphics app's on-disk badge store.
+ *
+ * There is no version column in the schema and none is planned: two badges at 1024px
+ * is about 200KB, so the graphics app simply re-fetches both when a match is selected.
+ * Pass any version string you do have; pass null to key on team and size alone.
  */
 export const getLogoCacheKey = (
   teamId: string,
