@@ -1,2 +1,9 @@
 node_modules/
-dist/
+
+
+# dist/ is COMMITTED on purpose — see README. This package is consumed as a git
+# dependency by two repos and a Netlify build, and a git dependency that has to
+# compile itself on install is at the mercy of whichever package manager the
+# consumer uses. npm runs `prepare`; bun, which builds the web app on Netlify,
+# is not guaranteed to. The failure is a production build that cannot resolve
+# any subpath, which is a bad way to find out.
