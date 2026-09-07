@@ -1,6 +1,6 @@
 {
   "name": "@matchops/shared",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "Logic shared by the MatchOps web app and the Windows graphics app. Pure functions only \u2014 no React, no Supabase, no DOM.",
   "type": "module",
   "main": "dist/index.js",
@@ -13,6 +13,14 @@
     "./playout": {
       "types": "./dist/playout.d.ts",
       "default": "./dist/playout.js"
+    },
+    "./domain": {
+      "types": "./dist/domain.d.ts",
+      "default": "./dist/domain.js"
+    },
+    "./arming": {
+      "types": "./dist/arming.d.ts",
+      "default": "./dist/arming.js"
     }
   },
   "files": [
