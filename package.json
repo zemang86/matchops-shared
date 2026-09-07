@@ -1,18 +1,32 @@
 {
   "name": "@matchops/shared",
-  "version": "0.1.0",
-  "description": "Logic shared by the MatchOps web app and the Windows graphics app. Pure functions only — no React, no Supabase, no DOM.",
+  "version": "0.2.0",
+  "description": "Logic shared by the MatchOps web app and the Windows graphics app. Pure functions only \u2014 no React, no Supabase, no DOM.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
-  "exports": { ".": { "types": "./dist/index.d.ts", "default": "./dist/index.js" } },
-  "files": ["dist", "src"],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "default": "./dist/index.js"
+    },
+    "./playout": {
+      "types": "./dist/playout.d.ts",
+      "default": "./dist/playout.js"
+    }
+  },
+  "files": [
+    "dist",
+    "src"
+  ],
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "prepare": "npm run build",
     "test": "node --test test/*.test.js"
   },
-  "devDependencies": { "typescript": "^5.6.0" },
+  "devDependencies": {
+    "typescript": "^5.6.0"
+  },
   "license": "UNLICENSED",
   "private": true
 }
