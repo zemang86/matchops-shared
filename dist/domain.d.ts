@@ -58,7 +58,7 @@ export interface LicenceSession {
     warning: string | null;
 }
 /** The three per-match resources the mirror holds. */
-export type ResourceName = 'live' | 'stats' | 'lineup' | 'match';
+export type ResourceName = 'live' | 'stats' | 'lineup' | 'match' | 'league';
 export interface HeldResource {
     data: unknown;
     etag: string | null;
@@ -335,6 +335,93 @@ export interface RenderContext {
      * record of them.
      */
     stats: StatsData | null;
+    /**
+     * The league reading of this fixture, or null where there is none.
+     *
+     * Null is the ordinary case, not the failure: a cup tie, a friendly, or a competition FAM
+     * is not mapped to. Every league template checks it and draws nothing, because a mini-table
+     * with an empty row is worse on air than no mini-table at all.
+     *
+     * It arrives from `/api/v1/matches/:matchId/league` rather than being derived here. The
+     * snapshot it comes from is behind RLS that wants a real Supabase session, which neither
+     * this app's mirror nor the render surface has — so the deriver runs server-side and both
+     * tiers read the same answer. See `netlify/functions/league-view.ts` in the web repo.
+     */
+    league: LeagueData | null;
+}
+/** One row of a league table. `position` is FAM's, re-sorted when we have moved someone. */
+export interface LeagueRow {
+    position: number;
+    team: string;
+    played: number;
+    won: number;
+    drawn: number;
+    lost: number;
+    goalsFor: number;
+    goalsAgainst: number;
+    goalDifference: number;
+    points: number;
+}
+/** One result in a club's recent form, newest first. */
+export interface LeagueForm {
+    outcome: 'W' | 'D' | 'L';
+    opponent: string;
+    scoreFor: number;
+    scoreAgainst: number;
+    home: boolean;
+    date: string;
+}
+/** One previous meeting, this season's or an earlier one's. */
+export interface LeagueMeeting {
+    date: string;
+    home: string;
+    away: string;
+    homeScore: number;
+    awayScore: number;
+    /** Present on meetings from earlier seasons, absent on this season's. */
+    competition?: string;
+}
+/**
+ * One talking point.
+ *
+ * `kind` is load-bearing rather than a label. Exactly one generator quotes a league
+ * position — the `table` fact — and everything else is arithmetic on results we hold. So
+ * `kind === 'table'` is precisely the set that may not go on air without the disclaimer,
+ * and a template deciding by any other test would eventually be wrong.
+ */
+export interface LeagueFact {
+    kind: string;
+    priority: number;
+    headline: string;
+    detail?: string;
+}
+export interface LeagueData {
+    /** When FAM's snapshot was taken. The provenance line shows it; the rules turn on it. */
+    fetchedAt: string;
+    /** FAM's table plus our own completed results it cannot contain yet. */
+    before: LeagueRow[];
+    /** `before` with this match applied, when it counts. Identical to `before` when it does not. */
+    after: LeagueRow[];
+    /** Whether `after` differs from `before`. */
+    applying: boolean;
+    /** The match is under way, so there is a scoreline to read at all. */
+    started: boolean;
+    homeBefore: LeagueRow;
+    awayBefore: LeagueRow;
+    homeAfter: LeagueRow;
+    awayAfter: LeagueRow;
+    homeForm: LeagueForm[];
+    awayForm: LeagueForm[];
+    /** This season's meetings, from FAM's own results. */
+    h2h: LeagueMeeting[];
+    /** Earlier seasons: ours first, then FAM's archive. */
+    past: LeagueMeeting[];
+    pastRecord: {
+        w: number;
+        d: number;
+        l: number;
+    };
+    facts: LeagueFact[];
 }
 /**
  * Back to front. One graphic per layer, so nothing can overlap itself.

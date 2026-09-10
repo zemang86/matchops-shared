@@ -188,6 +188,33 @@ const MANIFEST = [
         hides: [],
     },
     {
+        id: 'leagueContext',
+        // "League" in the rack; the artwork says KEDUDUKAN LIGA. Same split as Passes/HANTARAN.
+        label: 'League',
+        // A lower third by geometry and by mutual exclusion, and the exclusion is the point:
+        // this and the mini-table are two readings of the same table, and two league straps on
+        // screen at once would invite a viewer to compare them and find them saying different
+        // things at different moments of a goal being applied.
+        layer: 'lower',
+        // `live`, not `frozen`, and this is the opposite call from the goal bar. A goal bar must
+        // not rewrite itself mid-animation because a later event landed. A league strap must
+        // follow the score — its whole claim is "where these two stand", and a strap still
+        // showing the pre-goal points thirty seconds after the goal is simply wrong.
+        feed: 'live',
+        // Long enough to read two clubs' records and the disclaimer under them. The passes board
+        // holds twelve for four numbers; this has more words and no less to say.
+        autoOut: 12_000,
+        hides: [],
+    },
+    {
+        id: 'miniTable',
+        label: 'Mini table',
+        layer: 'lower',
+        feed: 'live',
+        autoOut: 12_000,
+        hides: [],
+    },
+    {
         id: 'miniStats',
         label: 'Possession',
         // Docked under the bug rather than banded across the bottom of the frame.
@@ -265,6 +292,29 @@ const MANIFEST = [
     {
         id: 'officials',
         label: 'Officials',
+        layer: 'full',
+        feed: 'live',
+        autoOut: null,
+        hides: ['bug'],
+        group: 'prematch',
+    },
+    {
+        id: 'formH2H',
+        label: 'Form & H2H',
+        // A full screen because it is two lists, not a strap: five results a side and however
+        // many previous meetings there are. Squeezed into the bottom band it would be a table
+        // nobody can read at broadcast bitrates.
+        layer: 'full',
+        feed: 'live',
+        autoOut: null,
+        hides: ['bug'],
+        // Build-up, so the rack folds it away once the clock starts. Form and head-to-head are
+        // what a commentator sets a match up with; neither is news once it is under way.
+        group: 'prematch',
+    },
+    {
+        id: 'factCard',
+        label: 'Match facts',
         layer: 'full',
         feed: 'live',
         autoOut: null,

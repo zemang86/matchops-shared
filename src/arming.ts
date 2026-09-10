@@ -488,6 +488,70 @@ export function arm(def: GraphicDef, context: RenderContext, onAir?: Set<string>
       };
     }
 
+    // --- the league graphics ------------------------------------------------
+    //
+    // Four graphics, one gate, and no payload between them. They are `live`, so each reads
+    // `context.league` at render time the way the passes board reads `stats` — which means
+    // arming has exactly one job here: say whether there is a league to draw, and say what
+    // it will draw, before anybody puts it on air.
+    //
+    // The data is not derived here and could not be. It comes from
+    // `/api/v1/matches/:matchId/league`, because the FAM snapshot behind it sits under RLS
+    // wanting a Supabase session that neither this app nor the render surface holds. So the
+    // one thing arming must never do is invent a fallback: a league strap that draws
+    // *something* when the league is unknown is the failure this whole tier is shaped to
+    // avoid.
+    case 'leagueContext':
+    case 'miniTable':
+    case 'formH2H':
+    case 'factCard': {
+      const league = context.league;
+      if (!league) {
+        return {
+          ready: false,
+          data: null,
+          // Two genuinely different reasons and the operator can act on one of them. A cup
+          // tie is nothing to fix; a mapping nobody set is a five-minute job before kickoff.
+          summary: 'No league table for this fixture — a cup tie, a friendly, or a competition FAM is not mapped to.',
+        };
+      }
+
+      const home = league.homeAfter ?? league.homeBefore;
+      const away = league.awayAfter ?? league.awayBefore;
+      const stand = `${side(match, live, 'home')} ${home?.position ?? '?'} · ${side(match, live, 'away')} ${away?.position ?? '?'}`;
+
+      if (def.id === 'formH2H') {
+        const met = league.h2h.length + league.past.length;
+        return {
+          ready: true,
+          data: null,
+          summary: met === 0
+            ? `Form only — these two have no recorded meeting`
+            : `Form, and ${met} previous meeting${met === 1 ? '' : 's'}`,
+        };
+      }
+
+      if (def.id === 'factCard') {
+        const top = league.facts[0];
+        return {
+          ready: league.facts.length > 0,
+          data: null,
+          summary: top
+            ? `${league.facts.length} point${league.facts.length === 1 ? '' : 's'} — "${top.headline}"`
+            : 'No talking points could be derived for these two.',
+        };
+      }
+
+      // The two that carry a position, and the summary says so out loud. `applying` is the
+      // difference between a table that is FAM's last word and one this match has already
+      // moved, and an operator about to put a position on air should know which they have.
+      return {
+        ready: true,
+        data: null,
+        summary: `${stand}${league.applying ? ' — live-adjusted' : ''}`,
+      };
+    }
+
     default:
       // A graphic in the manifest that nothing here knows how to arm. It can
       // still be taken; it just goes up on whatever its template makes of an
