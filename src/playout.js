@@ -301,29 +301,6 @@ const MANIFEST = [
     hides: ['bug'],
     group: 'prematch',
   },
-  {
-    id: 'formH2H',
-    label: 'Form & H2H',
-    // A full screen because it is two lists, not a strap: five results a side and however
-    // many previous meetings there are. Squeezed into the bottom band it would be a table
-    // nobody can read at broadcast bitrates.
-    layer: 'full',
-    feed: 'live',
-    autoOut: null,
-    hides: ['bug'],
-    // Build-up, so the rack folds it away once the clock starts. Form and head-to-head are
-    // what a commentator sets a match up with; neither is news once it is under way.
-    group: 'prematch',
-  },
-  {
-    id: 'factCard',
-    label: 'Match facts',
-    layer: 'full',
-    feed: 'live',
-    autoOut: null,
-    hides: ['bug'],
-    group: 'prematch',
-  },
 ];
 
 const byId = (id) => MANIFEST.find((g) => g.id === id) || null;

@@ -418,9 +418,7 @@ export function arm(def, context, onAir) {
         // *something* when the league is unknown is the failure this whole tier is shaped to
         // avoid.
         case 'leagueContext':
-        case 'miniTable':
-        case 'formH2H':
-        case 'factCard': {
+        case 'miniTable': {
             const league = context.league;
             if (!league) {
                 return {
@@ -434,26 +432,6 @@ export function arm(def, context, onAir) {
             const home = league.homeAfter ?? league.homeBefore;
             const away = league.awayAfter ?? league.awayBefore;
             const stand = `${side(match, live, 'home')} ${home?.position ?? '?'} · ${side(match, live, 'away')} ${away?.position ?? '?'}`;
-            if (def.id === 'formH2H') {
-                const met = league.h2h.length + league.past.length;
-                return {
-                    ready: true,
-                    data: null,
-                    summary: met === 0
-                        ? `Form only — these two have no recorded meeting`
-                        : `Form, and ${met} previous meeting${met === 1 ? '' : 's'}`,
-                };
-            }
-            if (def.id === 'factCard') {
-                const top = league.facts[0];
-                return {
-                    ready: league.facts.length > 0,
-                    data: null,
-                    summary: top
-                        ? `${league.facts.length} point${league.facts.length === 1 ? '' : 's'} — "${top.headline}"`
-                        : 'No talking points could be derived for these two.',
-                };
-            }
             // The two that carry a position, and the summary says so out loud. `applying` is the
             // difference between a table that is FAM's last word and one this match has already
             // moved, and an operator about to put a position on air should know which they have.
