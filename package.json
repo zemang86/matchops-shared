@@ -1,7 +1,7 @@
 {
   "name": "@matchops/shared",
-  "version": "0.5.0",
-  "description": "Logic shared by the MatchOps web app and the Windows graphics app. Pure functions only \u2014 no React, no Supabase, no DOM.",
+  "version": "0.5.1",
+  "description": "Logic shared by the MatchOps web app and the Windows graphics app. Pure functions only — no React, no Supabase, no DOM.",
   "type": "module",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
