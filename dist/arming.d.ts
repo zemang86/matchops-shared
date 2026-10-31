@@ -69,3 +69,4 @@ export declare function arm(def: GraphicDef, context: RenderContext, onAir?: Set
 export * from './events.js';
 export * from './passes.js';
 export * from './headline.js';
+export * from './flash.js';

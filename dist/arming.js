@@ -13,6 +13,7 @@
 import { headlineFor } from './headline.js';
 import { eventPool } from './events.js';
 import { passBoard } from './passes.js';
+import { FLASH_LABEL, FLASH_STATS, flashFigures, flashPair } from './flash.js';
 const GOAL_TYPES = new Set(['goal', 'own_goal']);
 const CARD_TYPES = new Set(['yellow', 'red']);
 const SUB_TYPES = new Set(['sub_in', 'sub_out']);
@@ -283,43 +284,58 @@ export function arm(def, context, onAir) {
             };
         }
         case 'miniStats': {
-            const possession = live?.stats?.possession;
-            const home = possession?.home ?? 0;
-            const away = possession?.away ?? 0;
+            const home = side(match, live, 'home');
+            const away = side(match, live, 'away');
+            // One design, one trigger per stat: only the payload differs, as with the
+            // two sides of a lineup.
+            //
+            // Each is gated on its pair summing above zero, the gate the full board does
+            // not have and the reason it has no bars. Two numbers that sum to nothing
+            // cannot be drawn as a proportion of each other: an earlier stats board
+            // divided by zero at nil-nil and left the last bar length sitting on air.
+            // Refusing to arm is the fix at the only point where refusing costs nothing —
+            // a button that stays dark is a graphic nobody had to notice was wrong. A row
+            // of zeroes is every fixture before kick-off, so each button lights when its
+            // first figure is typed in.
+            const takes = FLASH_STATS.map((stat) => {
+                const pair = flashPair(live, stat);
+                const label = FLASH_LABEL[stat];
+                const ready = pair[0] + pair[1] > 0;
+                return {
+                    key: stat,
+                    label,
+                    ready,
+                    data: { stat },
+                    summary: ready
+                        ? `${label}: ${home} ${flashFigures(stat, pair)} ${away}, live while up`
+                        : `No ${label.toLowerCase()} figures yet — the bar needs two numbers to split.`,
+                };
+            });
             // It drops out from under the scorebug, so without the scorebug it is a
             // panel hanging in the gap where the bug should be. `electron/graphics.js`
             // refuses the take outright; this is the same rule said early enough for
-            // the operator to see why the button is dark.
+            // the operator to see why the buttons are dark. The takes still come back,
+            // all dark, so the row does not change shape when the bug goes up.
             if (hostIsDown(def, onAir)) {
                 return {
                     ready: false,
                     data: null,
+                    takes: takes.map((t) => ({ ...t, ready: false })),
                     summary: 'Put the scorebug up first — this drops out from under it.',
                 };
             }
-            // The gate the full board does not have, and the reason it has no bars.
-            // Two numbers that sum to nothing cannot be drawn as a proportion of each
-            // other: an earlier stats board divided by zero at nil-nil and left the
-            // last bar length sitting on air. Refusing to arm is the fix at the only
-            // point where refusing costs nothing — a button that stays dark is a
-            // graphic nobody had to notice was wrong.
-            //
-            // Not the same as "no stats held". A row of zeroes is what every fixture
-            // looks like before kick-off, so this button is dark for the whole
-            // build-up and lights when the first possession figure is typed in.
-            if (home + away <= 0) {
-                return {
-                    ready: false,
-                    data: null,
-                    summary: live?.stats
-                        ? 'No possession figures yet — the bar needs two numbers to split.'
-                        : 'No stats held for this match yet.',
-                };
-            }
+            const lit = takes.filter((t) => t.ready);
             return {
-                ready: true,
+                ready: lit.length > 0,
                 data: null,
-                summary: `${side(match, live, 'home')} ${home}% – ${away}% ${side(match, live, 'away')}, live while up`,
+                takes,
+                summary: !live?.stats
+                    ? 'No stats held for this match yet.'
+                    : !lit.length
+                        ? 'No figures yet — each button lights when its two numbers are typed.'
+                        : lit
+                            .map((t) => `${t.label} ${flashFigures(t.key, flashPair(live, t.key))}`)
+                            .join(' · '),
             };
         }
         case 'teamStats': {
@@ -456,3 +472,4 @@ export function arm(def, context, onAir) {
 export * from './events.js';
 export * from './passes.js';
 export * from './headline.js';
+export * from './flash.js';

@@ -219,7 +219,7 @@ const MANIFEST = [
   },
   {
     id: 'miniStats',
-    label: 'Possession',
+    label: 'Stat flash',
     // Docked under the bug rather than banded across the bottom of the frame.
     // A full-width strip is what this looked like first, and it read as a piece
     // of furniture from another decade — the possession panel every league
