@@ -451,6 +451,46 @@ export interface LeagueData {
   past: LeagueMeeting[];
   pastRecord: { w: number; d: number; l: number };
   facts: LeagueFact[];
+  /**
+   * The scorer chart as it goes on air, shaped by the web app's league endpoint.
+   *
+   * Optional because an endpoint from before it existed sends none, and a rack reading that
+   * must arm the panel dark rather than draw an empty one.
+   */
+  topScorers?: LeagueTopScorers;
+}
+
+/** One row of the top-scorers panel. Every field is final: the template only draws. */
+export interface LeagueScorer {
+  /** Joint: one plus the number of players with more goals, so ties share a number. */
+  rank: number;
+  /** As the Starting XI prints it: patronymic cut, thirteen characters, upper case. */
+  name: string;
+  /** FAM's full spelling. Not drawn. */
+  player: string;
+  team: string;
+  /** The club's code. Null when the club has no row of ours. */
+  teamShort: string | null;
+  /** The crest on Supabase storage, as the endpoint sends it. Never drawn directly. */
+  logo: string | null;
+  /**
+   * The crest a template may draw, stamped by the rack's bridge and never by the endpoint —
+   * the same split as `Team.badgeUrl` and `localBadgeUrl`. The web tier points it at `logo`;
+   * the .exe will point it at its disk cache. Absent, the row shows the club's code in a
+   * plate, which is `Badge`'s designed fallback rather than a hole.
+   */
+  localLogo?: string | null;
+  goals: number;
+  /** Of `goals`, how many came in this match and are not in FAM's chart yet. */
+  added: number;
+  /** Which of tonight's clubs this player is from, if either. */
+  side: 'home' | 'away' | null;
+}
+
+export interface LeagueTopScorers {
+  rows: LeagueScorer[];
+  /** Players past the last row on the same tally, so a cut through a tie is said, not hidden. */
+  tiedBeyond: { count: number; goals: number } | null;
 }
 
 /* --- the playout bus ------------------------------------------------------ */

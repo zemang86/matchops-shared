@@ -298,6 +298,25 @@ const MANIFEST = [
         hides: ['bug'],
         group: 'prematch',
     },
+    {
+        id: 'topScorers',
+        label: 'Top scorers',
+        // A panel down the right-hand side, not a full frame: the camera keeps the players
+        // (Hazman, 2026-11-01). Right because the bug is top-left. It is on `full` for the
+        // mutual exclusion, not the geometry: the other big panels are here, and two of them on
+        // screen at once is the thing a layer exists to prevent. `lower` would be wrong the other
+        // way, knocking a goal bar off.
+        layer: 'full',
+        // Live: a goal tonight moves a row while the panel is up, as it moves the commentator
+        // page's board.
+        feed: 'live',
+        // A state for as long as the camera holds on the players, cleared by hand, like the rest
+        // of the build-up.
+        autoOut: null,
+        // Nothing. It keeps clear of the bug by sitting on the other side of the frame.
+        hides: [],
+        group: 'prematch',
+    },
 ];
 const byId = (id) => MANIFEST.find((g) => g.id === id) || null;
 /**

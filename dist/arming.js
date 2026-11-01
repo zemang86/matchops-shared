@@ -457,6 +457,42 @@ export function arm(def, context, onAir) {
                 summary: `${stand}${league.applying ? ' — live-adjusted' : ''}`,
             };
         }
+        // The scorer chart. The same gate as the league straps, plus one of its own: an endpoint
+        // from before the chart was served answers with a view and no rows, and that must arm
+        // dark rather than put an empty panel on air.
+        case 'topScorers': {
+            const league = context.league;
+            if (!league) {
+                return {
+                    ready: false,
+                    data: null,
+                    summary: 'No league table for this fixture — a cup tie, a friendly, or a competition FAM is not mapped to.',
+                };
+            }
+            const rows = league.topScorers?.rows ?? [];
+            const first = rows[0];
+            if (!first) {
+                return {
+                    ready: false,
+                    data: null,
+                    summary: league.topScorers
+                        ? "FAM's scorer chart is empty — no league goals recorded yet."
+                        : 'The league feed carries no scorer chart. The web app needs updating.',
+                };
+            }
+            const top = rows.filter((r) => r.goals === first.goals);
+            const who = (r) => `${r.name}${r.teamShort ? ` (${r.teamShort})` : ''}`;
+            const leaders = top.length > 2
+                ? `${top.length} players lead`
+                : `${top.map(who).join(' and ')} ${top.length > 1 ? 'lead' : 'leads'}`;
+            const ours = rows.filter((r) => r.side).length;
+            return {
+                ready: true,
+                data: null,
+                summary: `${leaders} on ${first.goals} · ${ours} of ${rows.length} from tonight's clubs` +
+                    (rows.some((r) => r.added) ? " · tonight's goals counted" : ''),
+            };
+        }
         default:
             // A graphic in the manifest that nothing here knows how to arm. It can
             // still be taken; it just goes up on whatever its template makes of an
