@@ -6,10 +6,14 @@ graphics app** (`matchops-graphics`).
 Installed straight from git — no registry, no publish step:
 
 ```jsonc
-"@matchops/shared": "github:zemang86/matchops-shared#v0.1.0"
+"@matchops/shared": "github:zemang86/matchops-shared#v0.5.3"
 ```
 
-`npm run prepare` builds on install, so consumers get `dist/` without it being committed.
+**`dist/` is committed, on purpose.** Consumers install from a git tag, and a git dependency
+that has to compile itself on install depends on the consumer's package manager running
+`prepare` — not every one does, and the failure is a production build that cannot resolve
+any subpath. With the output in the tag, any package manager installs it with no build step
+and no TypeScript. The cost is rebuilding `dist/` before every tag; see Releasing.
 
 ## The rule that keeps this useful
 
@@ -23,16 +27,29 @@ Deliberately **not** here:
 
 | | Why |
 |---|---|
-| Generated Supabase types | Regenerate in each repo with `npm run db:types`. The database is the contract. |
+| Generated Supabase types | Regenerate where they are used, with the web repo's `npm run db:types`. The database is the contract. |
 | `vmixTransformers.ts` | vMix-specific; the graphics app has its own template contract. |
 | React components, query hooks | App internals. Sharing them couples release cycles. |
 | Hand-written entity types (`common.ts`) | App-level view models, and they overlap the generated types. Regenerate rather than share. |
 
 ## What is here
 
-- **`clock.ts`** — the match clock. `getMatchClock()` / `getMatchMinute()`.
-- **`logos.ts`** — team badge storage paths and broadcast URLs.
-- **`format.ts`** — shared display formatting.
+Five entry points, the `exports` in `package.json`:
+
+- **`@matchops/shared`** — `clock.ts`, the match clock (`getMatchClock()` /
+  `getMatchMinute()`); `logos.ts`, team badge storage paths and broadcast URLs; and
+  `format.ts`, shared display formatting.
+- **`@matchops/shared/playout`** — the playout bus and the graphics manifest: five layers,
+  ducking, autoOut, seq guards and panic. Plain JavaScript with no imports, so the Windows
+  app runs it in its main process and the web tier runs it in a function.
+- **`@matchops/shared/domain`** — the domain model: what a match, a live feed, a team sheet
+  and a graphic are.
+- **`@matchops/shared/arming`** — what a graphic will put on air, worked out before the
+  operator presses TAKE. It also re-exports the readers it is built on: `events.ts` (the
+  event pool and the bug's red cards), `passes.ts` (the pass board), `headline.ts` and
+  `flash.ts`.
+- **`@matchops/shared/stopwatch`** — the operator's stopwatch, as pure transitions. Not the
+  match clock.
 
 ## Why the clock lives here
 
@@ -51,11 +68,23 @@ so the UI can say so. A late kickoff is the normal case, not the exception.
 
 ## Releasing
 
+**Cut the release on a branch, tag it there, and fast-forward `main` to the release
+before tagging the next one.** A release that is only reachable from a feature branch
+leaves `main` describing a package nobody installs, and the next release branch has
+nowhere sound to start from.
+
 ```bash
-npm test                       # 15 tests, node:test, no deps
-npm version patch              # or minor/major
-git push && git push --tags
+# on the release's branch, never on main
+npm run build                  # dist/ is committed: rebuild it and commit the result
+npm test                       # node:test, no deps
+npm version patch --no-git-tag-version   # or minor/major
+git commit -am "chore(release): x.y.z — what it carries"
+git tag vx.y.z
+git push -u origin HEAD && git push origin vx.y.z
 # then bump the tag in each consumer's package.json
+
+# once the consumers run on it, and before the next tag
+git switch main && git merge --ff-only vx.y.z && git push origin main
 ```
 
 Consumers pin an exact tag. Nothing updates itself behind your back mid-season.
