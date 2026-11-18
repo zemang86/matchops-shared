@@ -158,6 +158,31 @@ export function arm(def, context, onAir) {
                 summary: `${side(match, live, 'home')} ${score} ${side(match, live, 'away')}${live ? '' : ' — no live data yet, will fill in'}`,
             };
         }
+        case 'goalBug': {
+            // Celebrates *on* the bug, so it needs the bug up — or itself, so a press
+            // on the wrong side can be corrected while it is still playing. Not gated
+            // on a goal event: the whole point is that it can be fired the second the
+            // ball goes in, before anybody has typed the goal into match management.
+            const up = !onAir || onAir.has('scorebug') || onAir.has('goalBug');
+            const takes = ['home', 'away'].map((which) => {
+                const team = side(match, live, which);
+                return {
+                    key: which,
+                    label: team,
+                    ready: up,
+                    data: { side: which },
+                    summary: `GOAL ${team} — on the bug for ${Math.round((def.autoOut ?? 0) / 1000)}s, then the bug goes off. Update the score, then take the bug back.`,
+                };
+            });
+            return {
+                ready: up,
+                data: null,
+                takes,
+                summary: up
+                    ? 'Clears itself and takes the bug off with it — update the score, then take the bug back.'
+                    : 'Put the scorebug up first — this celebrates on it.',
+            };
+        }
         case 'goal': {
             const found = mostRecent(live, GOAL_TYPES);
             if (!found)

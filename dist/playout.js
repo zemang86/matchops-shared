@@ -103,6 +103,25 @@ const MANIFEST = [
         hides: [],
     },
     {
+        // GOAL on the scorebug itself: the bug floods with the scorer's colour,
+        // their crest punches in and GOAL is dealt across it. Taken per side, like
+        // the team sheet.
+        id: 'goalBug',
+        label: 'Goal on the bug',
+        // The scorebug's own layer, on purpose. Taking it replaces the bug — the
+        // celebration opens on an exact copy of it — and when it clears itself the
+        // layer is empty, so the bug is off air until the operator brings it back.
+        // That is the workflow it is for: the score is updated in match management
+        // while the bug is down, and it returns with the right number rather than
+        // changing under the celebration or coming back stale.
+        layer: 'bug',
+        // The payload is only which side scored, and that must not change mid-take.
+        feed: 'frozen',
+        // Built by about 2.2s, held to here, then a two-thirds-of-a-second strike.
+        autoOut: 4_000,
+        hides: [],
+    },
+    {
         id: 'result',
         // Not "HT / FT", which names two of the five things it says. The headline
         // follows the match status through SEPAK MULA, SEPARUH MASA PERTAMA,
@@ -453,6 +472,21 @@ function take(id, data) {
         autoOutAt: def.autoOut ? Date.now() + def.autoOut : null,
     };
     layers[def.layer] = entry;
+    // A different graphic taking a host's layer is that host leaving, so what was
+    // docked to it leaves too — the same rule `clear()` applies. Before the goal
+    // celebration nothing else lived on the bug's layer and this could not arise;
+    // now it does, and without it the added-time tab would be left hanging over
+    // an empty layer once the celebration cleared itself. A re-take of the host
+    // keeps them: it is still the same board.
+    if (replaced && replaced.id !== id) {
+        for (const child of docked(replaced.id)) {
+            if (layers[child.layer]?.id !== child.id)
+                continue;
+            clearTimer(child.id);
+            layers[child.layer] = null;
+            console.log(`[graphics] clear ${child.id} (docked to ${replaced.id}, replaced by ${id})`);
+        }
+    }
     if (def.autoOut && timersEnabled) {
         // Captured by seq: if the operator re-takes before this fires, the timer
         // belongs to a graphic that is no longer on air and must do nothing.

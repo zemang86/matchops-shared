@@ -67,8 +67,8 @@ export const MANIFEST: ({
     label: string;
     layer: string;
     feed: string;
-    autoOut: null;
-    hides: string[];
+    autoOut: number;
+    hides: never[];
     attachedTo?: undefined;
     firedFrom?: undefined;
     group?: undefined;
@@ -77,8 +77,8 @@ export const MANIFEST: ({
     label: string;
     layer: string;
     feed: string;
-    autoOut: number;
-    hides: never[];
+    autoOut: null;
+    hides: string[];
     attachedTo?: undefined;
     firedFrom?: undefined;
     group?: undefined;
@@ -118,8 +118,8 @@ export function byId(id: any): {
     label: string;
     layer: string;
     feed: string;
-    autoOut: null;
-    hides: string[];
+    autoOut: number;
+    hides: never[];
     attachedTo?: undefined;
     firedFrom?: undefined;
     group?: undefined;
@@ -128,8 +128,8 @@ export function byId(id: any): {
     label: string;
     layer: string;
     feed: string;
-    autoOut: number;
-    hides: never[];
+    autoOut: null;
+    hides: string[];
     attachedTo?: undefined;
     firedFrom?: undefined;
     group?: undefined;
