@@ -11,8 +11,13 @@ export declare const STOPPED: ClockState;
  *
  * Derived rather than stored, which is what lets every surface agree without
  * anything ticking: two devices holding the same state and reading the same
- * wall clock get the same answer, and a surface that reconnects mid-run is
+ * clock get the same answer, and a surface that reconnects mid-run is
  * immediately correct rather than a few seconds behind.
+ *
+ * "The same clock" is the load-bearing part. Where one device writes `since`
+ * and another reads it, both must pass server time as `now` (`clocksync.ts`),
+ * not their own `Date.now()` — a panel 136s slow put the clock 2:16 ahead on
+ * air, while reading correctly on the panel itself.
  */
 export declare function secondsOf(state: ClockState | null | undefined, now?: number): number;
 /** `MM:SS`, and never negative — a clock reading `-1:59` is worse than `00:00`. */

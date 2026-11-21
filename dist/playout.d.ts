@@ -181,8 +181,15 @@ export function state(): {
  * what lets an operator fire a graphic while the uplink is down: whatever was
  * in the mirror when they pressed the button is what goes to air, and the main
  * process needs to know nothing about the shape of it.
+ *
+ * `now` is when the take happened, and it is what `takenAt` and `autoOutAt` are
+ * stamped with. The app leaves it out: one process both stamps and expires, so
+ * its own clock is right by definition. The web tier passes server time
+ * (`clocksync.ts`), because the panel stamps and a different device expires —
+ * and a panel 136s slow once stamped a goal's `autoOutAt` two minutes in the
+ * past by the overlay's clock, so it never reached air.
  */
-export function take(id: any, data: any): {
+export function take(id: any, data: any, now?: number): {
     ok: boolean;
     error: string;
     reason: string;

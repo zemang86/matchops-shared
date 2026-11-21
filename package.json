@@ -25,6 +25,10 @@
     "./stopwatch": {
       "types": "./dist/stopwatch.d.ts",
       "default": "./dist/stopwatch.js"
+    },
+    "./clocksync": {
+      "types": "./dist/clocksync.d.ts",
+      "default": "./dist/clocksync.js"
     }
   },
   "files": [
